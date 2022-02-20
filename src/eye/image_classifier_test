@@ -1,0 +1,72 @@
+# Run a test of the classifier params and hyperparams to determine sensitivity of accuracy to them.
+import numpy
+from tensorflow import keras
+from keras.constraints import maxnorm
+from keras.utils import np_utils
+import matplotlib.pyplot as plt
+
+seed = 21
+
+#from keras.datasets import cifar10
+
+# bad practice but it's my file, i do what i want
+from TestFuncs.image_classification_functions import config
+
+# Default values unless we change them later.
+filter_x_size = 3
+filter_y_size = 3
+filter_channels = 32
+dropout_fraction = 0.2
+num_pooling_layers = 2
+num_CNN_blocks = 5
+neurons_per_dense_layer = 32
+num_dense_layers = 1
+dense_activation_type = 'softmax'
+numEpochs = 15
+batchSize=64
+
+num_models = 5
+epoch_increment = 5 #5,10,15,20,25
+cfg = []
+
+# Create the model configurations. No training or anything takes place yet.
+
+# Lets see how the most obvious param works
+# and vary the training epoch count.
+epochs = [ 5, 10, 15, 25, 35, 50]
+
+print(f"Creating model configurations.\n\n")
+for numEpochs in epochs:
+    cfg.append( 
+        config(filter_x_size,
+        filter_y_size,
+        filter_channels,
+        dropout_fraction,
+        num_pooling_layers,
+        num_CNN_blocks,
+        neurons_per_dense_layer,
+        num_dense_layers,
+        dense_activation_type,
+        numEpochs,
+        batchSize)
+    )
+
+# Train the models.
+print(f"Training models.\n\n")
+for model in cfg:
+    model.train_model()
+
+print(f"Models trained. Scores following:\n\n")
+# Print a summary of their scores.
+for model in cfg:
+    print(f"Accuracy: {model._scores[1]*100}%")
+    
+# Plot a graph of their histories.
+print(f"Plotting training history.\n\n")
+for model in cfg:
+    model.plot_my_model()
+    
+epoch_accuracy = [epochs[:],cfg[:]._scores]
+print(epoch_accuracy)
+
+plt.plot(epoch_accuracy)
